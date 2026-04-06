@@ -41,10 +41,15 @@ public class UserService : IUserService
         return new GetUserDto(createdUser.Id, createdUser.Name, createdUser.Email);
     }
 
-    public bool UpdateUser(int id, UpdateUserDto dto)
+    public GetUserDto? UpdateUser(int id, UpdateUserDto dto)
     {
         User updatedUser = new User(id, dto.Name, dto.Email);
-        return userRepository.UpdateUser(id, updatedUser);
+        var success = userRepository.UpdateUser(id, updatedUser);
+
+        if (!success)
+            return null;
+
+        return new GetUserDto(id, dto.Name, dto.Email);
     }
 
     public bool DeleteUser(int id)

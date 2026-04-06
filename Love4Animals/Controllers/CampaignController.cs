@@ -44,10 +44,10 @@ namespace Love4AnimalsApi.Controllers
         {
             var updated = campaignService.UpdateCampaign(id, dto);
 
-            if (!updated)
+            if (updated == null)
                 return NotFound(new { message = "Campaña no encontrada" });
 
-            return NoContent();
+            return Ok(updated);
         }
 
         [HttpDelete("{id}")]

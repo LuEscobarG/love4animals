@@ -7,6 +7,6 @@ public interface IUserService
     List<GetUserDto> GetUsers();
     GetUserDto? GetUserById(int id);
     GetUserDto CreateUser(CreateUserDto dto);
-    bool UpdateUser(int id, UpdateUserDto dto);
+    GetUserDto? UpdateUser(int id, UpdateUserDto dto);
     bool DeleteUser(int id);
 }

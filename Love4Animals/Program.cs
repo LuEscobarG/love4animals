@@ -2,6 +2,7 @@ using Love4AnimalsApi.Interfaces;
 using Love4AnimalsApi.Repositories;
 using Love4AnimalsApi.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -12,6 +13,9 @@ builder.Services.AddSingleton<IUserRepository, UserRepository>();
 
 builder.Services.AddScoped<ICampaignService, CampaignService>();
 builder.Services.AddSingleton<ICampaignRepository, CampaignRepository>();
+
+builder.Services.AddScoped<IPublicationService, PublicationService>();
+builder.Services.AddSingleton<IPublicationRepository, PublicationRepository>();
 
 var app = builder.Build();
 

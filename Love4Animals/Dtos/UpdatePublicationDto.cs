@@ -1,0 +1,8 @@
+namespace Love4AnimalsApi.Dtos;
+
+public record UpdatePublicationDto(
+    string Content,
+    List<int> CampaignIds,
+    int Likes,
+    int Shares
+);

@@ -11,8 +11,8 @@ public class UserRepository : IUserRepository
     {
         Users = new List<User>();
 
-        Users.Add(new User(1, "Jairo", "jairo@gmail.com"));
-        Users.Add(new User(2, "Maria", "maria@gmail.com"));
+        Users.Add(new User(1, "Andres", "andres@gmail.com"));
+        Users.Add(new User(2, "Camila", "camila@gmail.com"));
     }
 
     public List<User> GetUsers()

@@ -46,10 +46,15 @@ public class CampaignService : ICampaignService
         );
     }
 
-    public bool UpdateCampaign(int id, UpdateCampaignDto dto)
+   public GetCampaignDto? UpdateCampaign(int id, UpdateCampaignDto dto)
     {
         Campaign updatedCampaign = new Campaign(id, dto.Title, dto.Description, dto.GoalAmount);
-        return campaignRepository.UpdateCampaign(id, updatedCampaign);
+        var success = campaignRepository.UpdateCampaign(id, updatedCampaign);
+
+        if (!success)
+            return null;
+
+        return new GetCampaignDto(id, dto.Title, dto.Description, dto.GoalAmount);
     }
 
     public bool DeleteCampaign(int id)

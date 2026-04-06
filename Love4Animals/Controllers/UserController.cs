@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Love4AnimalsApi.Controllers
 {
-    [Route("v1/users/profile")]
+    [Route("v1/users")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -44,10 +44,10 @@ namespace Love4AnimalsApi.Controllers
         {
             var updated = userService.UpdateUser(id, dto);
 
-            if (!updated)
+            if (updated == null)
                 return NotFound(new { message = "Usuario no encontrado" });
 
-            return NoContent();
+            return Ok(updated);
         }
 
         [HttpDelete("{id}")]

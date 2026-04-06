@@ -7,6 +7,6 @@ public interface ICampaignService
     List<GetCampaignDto> GetCampaigns();
     GetCampaignDto? GetCampaignById(int id);
     GetCampaignDto CreateCampaign(CreateCampaignDto dto);
-    bool UpdateCampaign(int id, UpdateCampaignDto dto);
+    GetCampaignDto? UpdateCampaign(int id, UpdateCampaignDto dto);
     bool DeleteCampaign(int id);
 }
