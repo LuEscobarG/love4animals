@@ -30,10 +30,19 @@ builder.Services.AddScoped<IDonationService, DonationService>();
 builder.Services.AddScoped<IDonationRepository, DonationRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
-builder.Services.AddStackExchangeRedisCache(options =>
+// Redis Output Cache — usa Redis si está disponible, sino memoria
+var redisConnection = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrEmpty(redisConnection))
 {
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
-});
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnection;
+    });
+}
+else
+{
+    builder.Services.AddDistributedMemoryCache();
+}
 builder.Services.AddOutputCache(options =>
 {
     options.AddPolicy("Default", policy => policy.Expire(TimeSpan.FromMinutes(5)));
@@ -101,15 +110,10 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-}
-
+app.MapOpenApi();
+app.MapScalarApiReference();
 
 app.UseHttpsRedirection();
-
 app.UseHsts();
 
 
