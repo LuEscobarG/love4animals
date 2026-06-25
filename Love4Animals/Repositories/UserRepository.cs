@@ -25,9 +25,16 @@ public class UserRepository : IUserRepository
 
     public User CreateUser(User user)
     {
-        _context.Users.Add(user);
-        _context.SaveChanges();
-        return user;
+        try
+        {
+            _context.Users.Add(user);
+            _context.SaveChanges();
+            return user;
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new InvalidOperationException("Error al crear el usuario. Verifica que los datos sean válidos.", ex);
+        }
     }
 
     public bool UpdateUser(int id, User user)

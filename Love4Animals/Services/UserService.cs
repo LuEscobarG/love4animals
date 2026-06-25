@@ -16,7 +16,7 @@ public class UserService : IUserService
     }
 
     private GetUserDto MapToDto(User u) =>
-        new GetUserDto(u.Id, u.Name, u.Email, u.PasswordHash, u.UserType.ToString(), u.Phone, u.Bio);
+        new GetUserDto(u.Id, u.Name, u.Email, u.UserType.ToString(), u.Phone, u.Bio);
 
     private UserType ParseUserType(string userType) =>
         Enum.TryParse<UserType>(userType, true, out var parsed) ? parsed : UserType.Missionary;
@@ -32,14 +32,27 @@ public class UserService : IUserService
 
     public GetUserDto CreateUser(CreateUserDto dto)
     {
+        // Validar que el email no exista
+        var existingUser = _userRepository.GetUserByEmail(dto.Email);
+        if (existingUser != null)
+            throw new InvalidOperationException($"El email {dto.Email} ya está registrado");
+
+        // Validar campos obligatorios
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            throw new ArgumentException("El nombre es obligatorio");
+        if (string.IsNullOrWhiteSpace(dto.Email))
+            throw new ArgumentException("El email es obligatorio");
+        if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
+            throw new ArgumentException("La contraseña debe tener al menos 6 caracteres");
+
         var newUser = new User
         {
-            Name = dto.Name,
-            Email = dto.Email,
+            Name = dto.Name.Trim(),
+            Email = dto.Email.Trim().ToLower(),
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             UserType = ParseUserType(dto.UserType),
-            Phone = dto.Phone,
-            Bio = dto.Bio
+            Phone = dto.Phone?.Trim() ?? string.Empty,
+            Bio = dto.Bio?.Trim() ?? string.Empty
         };
         var created = _userRepository.CreateUser(newUser);
         return MapToDto(created);

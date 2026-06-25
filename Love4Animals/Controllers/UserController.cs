@@ -54,9 +54,25 @@ namespace Love4AnimalsApi.Controllers
         public async Task<ActionResult<GetUserDto>> Register([FromBody] CreateUserDto dto, [FromServices] IOutputCacheStore cache, CancellationToken ct)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var createdUser = userService.CreateUser(dto);
-            await cache.EvictByTagAsync("users", ct);
-            return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, createdUser);
+            
+            try
+            {
+                var createdUser = userService.CreateUser(dto);
+                await cache.EvictByTagAsync("users", ct);
+                return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, createdUser);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
+            }
         }
 
         [HttpPost("login")]
