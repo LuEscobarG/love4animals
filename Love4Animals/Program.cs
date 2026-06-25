@@ -3,6 +3,7 @@ using Love4AnimalsApi.Interfaces;
 using Love4AnimalsApi.Repositories;
 using Love4AnimalsApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -106,22 +107,15 @@ builder.Services.AddDataProtection();
 
 var app = builder.Build();
 
-// Configurar para confiar en los headers del proxy (Render)
-var forwardedHeadersOptions = new Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersOptions
+app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
-    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | 
-                       Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto,
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
     RequireHeaderSymmetry = false,
-    KnownNetworks = new() { new(System.Net.IPAddress.Parse("10.0.0.0"), 8) }
-};
-forwardedHeadersOptions.KnownProxies.Clear();
-forwardedHeadersOptions.KnownNetworks.Clear();
-app.UseForwardedHeaders(forwardedHeadersOptions);
+    AllowedHosts = new List<string> { "*" }
+});
 
-// CORS DEBE estar primero
 app.UseCors("AllowAll");
 
-// Middleware de manejo de excepciones global
 app.UseExceptionHandler(errorApp =>
 {
     errorApp.Run(async context =>
