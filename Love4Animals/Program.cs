@@ -106,6 +106,18 @@ builder.Services.AddDataProtection();
 
 var app = builder.Build();
 
+// Configurar para confiar en los headers del proxy (Render)
+var forwardedHeadersOptions = new Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | 
+                       Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto,
+    RequireHeaderSymmetry = false,
+    KnownNetworks = new() { new(System.Net.IPAddress.Parse("10.0.0.0"), 8) }
+};
+forwardedHeadersOptions.KnownProxies.Clear();
+forwardedHeadersOptions.KnownNetworks.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
+
 // CORS DEBE estar primero
 app.UseCors("AllowAll");
 
