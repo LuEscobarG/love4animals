@@ -9,4 +9,5 @@ public interface IUserService
     GetUserDto CreateUser(CreateUserDto dto);
     GetUserDto? UpdateUser(int id, UpdateUserDto dto);
     bool DeleteUser(int id);
+    LoginResponseDto? Login(LoginDto dto);
 }

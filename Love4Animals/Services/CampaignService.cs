@@ -6,59 +6,43 @@ namespace Love4AnimalsApi.Services;
 
 public class CampaignService : ICampaignService
 {
-    private ICampaignRepository campaignRepository;
+    private readonly ICampaignRepository _campaignRepository;
 
     public CampaignService(ICampaignRepository campaignRepository)
     {
-        this.campaignRepository = campaignRepository;
+        _campaignRepository = campaignRepository;
     }
 
-    public List<GetCampaignDto> GetCampaigns()
-    {
-        return campaignRepository.GetCampaigns()
+    public List<GetCampaignDto> GetCampaigns() =>
+        _campaignRepository.GetCampaigns()
             .Select(c => new GetCampaignDto(c.Id, c.Title, c.Description, c.GoalAmount))
             .ToList();
-    }
 
     public GetCampaignDto? GetCampaignById(int id)
     {
-        var campaign = campaignRepository.GetCampaignById(id);
-
-        if (campaign == null)
-            return null;
-
-        return new GetCampaignDto(campaign.Id, campaign.Title, campaign.Description, campaign.GoalAmount);
+        var campaign = _campaignRepository.GetCampaignById(id);
+        return campaign == null ? null : new GetCampaignDto(campaign.Id, campaign.Title, campaign.Description, campaign.GoalAmount);
     }
 
     public GetCampaignDto CreateCampaign(CreateCampaignDto dto)
     {
-        var campaigns = campaignRepository.GetCampaigns();
-        int newId = campaigns.Count > 0 ? campaigns.Max(c => c.Id) + 1 : 1;
-
-        Campaign newCampaign = new Campaign(newId, dto.Title, dto.Description, dto.GoalAmount);
-        var createdCampaign = campaignRepository.CreateCampaign(newCampaign);
-
-        return new GetCampaignDto(
-            createdCampaign.Id,
-            createdCampaign.Title,
-            createdCampaign.Description,
-            createdCampaign.GoalAmount
-        );
+        var newCampaign = new Campaign
+        {
+            Title = dto.Title,
+            Description = dto.Description,
+            GoalAmount = dto.GoalAmount
+        };
+        var created = _campaignRepository.CreateCampaign(newCampaign);
+        return new GetCampaignDto(created.Id, created.Title, created.Description, created.GoalAmount);
     }
 
-   public GetCampaignDto? UpdateCampaign(int id, UpdateCampaignDto dto)
+    public GetCampaignDto? UpdateCampaign(int id, UpdateCampaignDto dto)
     {
-        Campaign updatedCampaign = new Campaign(id, dto.Title, dto.Description, dto.GoalAmount);
-        var success = campaignRepository.UpdateCampaign(id, updatedCampaign);
-
-        if (!success)
-            return null;
-
-        return new GetCampaignDto(id, dto.Title, dto.Description, dto.GoalAmount);
+        var campaign = new Campaign { Id = id, Title = dto.Title, Description = dto.Description, GoalAmount = dto.GoalAmount };
+        var success = _campaignRepository.UpdateCampaign(id, campaign);
+        return success ? new GetCampaignDto(id, dto.Title, dto.Description, dto.GoalAmount) : null;
     }
 
-    public bool DeleteCampaign(int id)
-    {
-        return campaignRepository.DeleteCampaign(id);
-    }
+    public bool DeleteCampaign(int id) =>
+        _campaignRepository.DeleteCampaign(id);
 }

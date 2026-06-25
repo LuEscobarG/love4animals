@@ -1,17 +1,12 @@
-using System;
-
 namespace Love4AnimalsApi.Models;
 
 public class User
 {
-    public User (int Id, string Name, string Email)
-    {
-        this.Id = Id;
-        this.Name = Name;
-        this.Email = Email;
-    }
     public int Id { get; set; }
-    public string Name { get; set; }
-    public string Email { get; set; }
-
+    public string Name { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
+    public UserType UserType { get; set; }
+    public string Phone { get; set; } = string.Empty;
+    public string Bio { get; set; } = string.Empty;
 }

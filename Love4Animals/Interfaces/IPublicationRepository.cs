@@ -11,5 +11,7 @@ public interface IPublicationRepository
     bool DeletePublication(int id);
     bool AddLike(int id);
     bool AddShare(int id);
-    bool AddComment(int id, Comment comment);
+    bool AddComment(int publicationId, Comment comment);
+    bool UpdateComment(int publicationId, int commentId, string content);
+    bool DeleteComment(int publicationId, int commentId);
 }

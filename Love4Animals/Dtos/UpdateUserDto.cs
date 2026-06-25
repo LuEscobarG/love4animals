@@ -1,7 +1,9 @@
 namespace Love4AnimalsApi.Dtos;
 
 public record UpdateUserDto(
-    int Id,
     string Name,
-    string Email
+    string Email,
+    string UserType,
+    string Phone,
+    string Bio
 );

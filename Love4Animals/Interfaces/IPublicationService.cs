@@ -6,11 +6,12 @@ public interface IPublicationService
 {
     List<GetPublicationDto> GetPublications();
     GetPublicationDto? GetPublicationById(int id);
-    GetPublicationDto CreatePublication(CreatePublicationDto dto);
+    GetPublicationDto? CreatePublication(CreatePublicationDto dto);
     GetPublicationDto? UpdatePublication(int id, UpdatePublicationDto dto);
     bool DeletePublication(int id);
     bool AddLike(int id);
     bool AddShare(int id);
-    bool AddComment(int id, CreateCommentDto dto);
+    GetCommentDto? AddComment(int publicationId, CreateCommentDto dto);
+    GetCommentDto? UpdateComment(int publicationId, int commentId, UpdateCommentDto dto);
+    bool DeleteComment(int publicationId, int commentId);
 }
-

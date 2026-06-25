@@ -6,54 +6,73 @@ namespace Love4AnimalsApi.Services;
 
 public class UserService : IUserService
 {
-    private IUserRepository userRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly IJwtService _jwtService;
 
-    public UserService(IUserRepository userRepository)
+    public UserService(IUserRepository userRepository, IJwtService jwtService)
     {
-        this.userRepository = userRepository;
+        _userRepository = userRepository;
+        _jwtService = jwtService;
     }
 
-    public List<GetUserDto> GetUsers()
-    {
-        return userRepository.GetUsers()
-            .Select(user => new GetUserDto(user.Id, user.Name, user.Email))
-            .ToList();
-    }
+    private GetUserDto MapToDto(User u) =>
+        new GetUserDto(u.Id, u.Name, u.Email, u.PasswordHash, u.UserType.ToString(), u.Phone, u.Bio);
+
+    private UserType ParseUserType(string userType) =>
+        Enum.TryParse<UserType>(userType, true, out var parsed) ? parsed : UserType.Missionary;
+
+    public List<GetUserDto> GetUsers() =>
+        _userRepository.GetUsers().Select(MapToDto).ToList();
 
     public GetUserDto? GetUserById(int id)
     {
-        var user = userRepository.GetUserById(id);
-
-        if (user == null)
-            return null;
-
-        return new GetUserDto(user.Id, user.Name, user.Email);
+        var user = _userRepository.GetUserById(id);
+        return user == null ? null : MapToDto(user);
     }
 
     public GetUserDto CreateUser(CreateUserDto dto)
     {
-        var users = userRepository.GetUsers();
-        int newId = users.Count > 0 ? users.Max(u => u.Id) + 1 : 1;
-
-        User newUser = new User(newId, dto.Name, dto.Email);
-        var createdUser = userRepository.CreateUser(newUser);
-
-        return new GetUserDto(createdUser.Id, createdUser.Name, createdUser.Email);
+        var newUser = new User
+        {
+            Name = dto.Name,
+            Email = dto.Email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+            UserType = ParseUserType(dto.UserType),
+            Phone = dto.Phone,
+            Bio = dto.Bio
+        };
+        var created = _userRepository.CreateUser(newUser);
+        return MapToDto(created);
     }
 
     public GetUserDto? UpdateUser(int id, UpdateUserDto dto)
     {
-        User updatedUser = new User(id, dto.Name, dto.Email);
-        var success = userRepository.UpdateUser(id, updatedUser);
-
-        if (!success)
-            return null;
-
-        return new GetUserDto(id, dto.Name, dto.Email);
+        var updated = new User
+        {
+            Id = id,
+            Name = dto.Name,
+            Email = dto.Email,
+            UserType = ParseUserType(dto.UserType),
+            Phone = dto.Phone,
+            Bio = dto.Bio
+        };
+        var success = _userRepository.UpdateUser(id, updated);
+        return success ? MapToDto(updated) : null;
     }
 
-    public bool DeleteUser(int id)
+    public bool DeleteUser(int id) =>
+        _userRepository.DeleteUser(id);
+
+    public LoginResponseDto? Login(LoginDto dto)
     {
-        return userRepository.DeleteUser(id);
+        var user = _userRepository.GetUserByEmail(dto.Email);
+        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            return null;
+
+        var accessToken = _jwtService.GenerateAccessToken(user);
+        var refreshToken = _jwtService.GenerateRefreshToken();
+        var expiry = _jwtService.AccessTokenExpiry;
+
+        return new LoginResponseDto(user.Id, user.Name, user.Email, user.UserType.ToString(), accessToken, refreshToken, expiry);
     }
 }

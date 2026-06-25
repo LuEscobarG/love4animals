@@ -2,6 +2,9 @@ namespace Love4AnimalsApi.Dtos;
 
 public record GetPublicationDto(
     int Id,
+    int UserId,
+    string UserName,
+    string ImageUrl,
     string Content,
     List<int> CampaignIds,
     int Likes,
@@ -9,3 +12,4 @@ public record GetPublicationDto(
     int CommentCount,
     List<GetCommentDto> Comments
 );
+

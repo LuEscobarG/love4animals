@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: love4animals-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: love4animals
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - love4animals-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d love4animals"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: love4animals-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  api:
+    image: 657830185269.dkr.ecr.us-east-2.amazonaws.com/love4animals:1.0
+    container_name: love4animals-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=love4animals;Username=postgres;Password=postgres"
+      ConnectionStrings__Redis: redis:6379
+      Jwt__Key: Love4Animals_SuperSecretKey_2024_Min32Chars!
+      Jwt__Issuer: love4animals-api
+      Jwt__Audience: love4animals-client
+    ports:
+      - "8080:8080"
+
+volumes:
+  love4animals-postgres-data:

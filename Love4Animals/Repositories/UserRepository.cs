@@ -1,57 +1,57 @@
+using Love4AnimalsApi.Data;
 using Love4AnimalsApi.Interfaces;
 using Love4AnimalsApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Love4AnimalsApi.Repositories;
 
 public class UserRepository : IUserRepository
 {
-    private List<User> Users { get; set; }
+    private readonly AppDbContext _context;
 
-    public UserRepository()
+    public UserRepository(AppDbContext context)
     {
-        Users = new List<User>();
-
-        Users.Add(new User(1, "Andres", "andres@gmail.com"));
-        Users.Add(new User(2, "Camila", "camila@gmail.com"));
+        _context = context;
     }
 
-    public List<User> GetUsers()
-    {
-        return Users;
-    }
+    public List<User> GetUsers() =>
+        _context.Users.ToList();
 
-    public User? GetUserById(int id)
-    {
-        return Users.FirstOrDefault(u => u.Id == id);
-    }
+    public User? GetUserById(int id) =>
+        _context.Users.FirstOrDefault(u => u.Id == id);
+
+    public User? GetUserByEmail(string email) =>
+        _context.Users.FirstOrDefault(u => u.Email == email);
 
     public User CreateUser(User user)
     {
-        Users.Add(user);
+        _context.Users.Add(user);
+        _context.SaveChanges();
         return user;
     }
 
     public bool UpdateUser(int id, User user)
     {
-        var existingUser = Users.FirstOrDefault(u => u.Id == id);
+        var existing = _context.Users.FirstOrDefault(u => u.Id == id);
+        if (existing == null) return false;
 
-        if (existingUser == null)
-            return false;
+        existing.Name = user.Name;
+        existing.Email = user.Email;
+        existing.UserType = user.UserType;
+        existing.Phone = user.Phone;
+        existing.Bio = user.Bio;
 
-        existingUser.Name = user.Name;
-        existingUser.Email = user.Email;
-
+        _context.SaveChanges();
         return true;
     }
 
     public bool DeleteUser(int id)
     {
-        var user = Users.FirstOrDefault(u => u.Id == id);
+        var user = _context.Users.FirstOrDefault(u => u.Id == id);
+        if (user == null) return false;
 
-        if (user == null)
-            return false;
-
-        Users.Remove(user);
+        _context.Users.Remove(user);
+        _context.SaveChanges();
         return true;
     }
 }
