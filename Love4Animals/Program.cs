@@ -90,16 +90,6 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
-// Forzar HTTPS en producción
-if (!builder.Environment.IsDevelopment())
-{
-    builder.Services.AddHttpsRedirection(options =>
-    {
-        options.HttpsPort = 443;
-        options.RedirectStatusCode = 307;
-    });
-}
-
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("Public", config =>
@@ -117,17 +107,8 @@ builder.Services.AddDataProtection();
 
 var app = builder.Build();
 
-// CORS DEBE estar primero
 app.UseCors("AllowAll");
 
-// Forzar HTTPS en producción
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-    app.UseHsts();
-}
-
-// Middleware de manejo de excepciones global
 app.UseExceptionHandler(errorApp =>
 {
     errorApp.Run(async context =>
@@ -139,6 +120,34 @@ app.UseExceptionHandler(errorApp =>
         {
             context.Response.StatusCode = 500;
             await context.Response.WriteAsJsonAsync(new 
+            { 
+                message = "Error interno del servidor",
+                detail = exception.Error.Message,
+                type = exception.Error.GetType().Name
+            });
+        }
+    });
+});
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
+app.MapOpenApi();
+app.MapScalarApiReference();
+
+app.UseRateLimiter();
+
+app.UseOutputCache();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
             { 
                 message = "Error interno del servidor",
                 detail = exception.Error.Message,
