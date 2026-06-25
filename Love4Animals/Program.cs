@@ -113,8 +113,12 @@ using (var scope = app.Services.CreateScope())
 app.MapOpenApi();
 app.MapScalarApiReference();
 
-app.UseHttpsRedirection();
-app.UseHsts();
+// HTTPS y HSTS solo en desarrollo local
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+    app.UseHsts();
+}
 
 
 app.UseCors("AllowAll");
