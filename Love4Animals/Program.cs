@@ -107,6 +107,8 @@ builder.Services.AddDataProtection();
 
 var app = builder.Build();
 
+// CORS DEBE estar primero
+app.UseCors("AllowAll");
 
 using (var scope = app.Services.CreateScope())
 {
@@ -123,9 +125,6 @@ if (app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
     app.UseHsts();
 }
-
-
-app.UseCors("AllowAll");
 
 
 app.UseRateLimiter();
